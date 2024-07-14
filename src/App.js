@@ -296,14 +296,15 @@ function CharacterDetails({ characterDetails }) {
 	); */
 }
 
-function XPTriggerList({ playbook }) {
+function XPTriggerList({ playbook, vengefulTrigger }) {
 	return (
 		<details>
 			<summary>{playbook} XP triggers:</summary>
 			<p>
 				You addressed a challenge with {XP_TRIGGERS[playbook.toLowerCase()]}.<br/>
 				You expressed your beliefs, drives, heritage, or background.<br/>
-				You struggled with issues from your vice or traumas during the session.
+				You struggled with issues from your vice or traumas during the session.<br/>
+				{vengefulTrigger ? "You got payback against someone who harmed you or someone you care about. If your crew helped you get payback, also mark crew xp." : ""}
 			</p>
 		</details>
 	);
@@ -360,7 +361,7 @@ function TraumaSelector({ trauma, setTrauma }) {
 	);
 }
 
-function HarmTable({ harm }) {
+function HarmTable({ harm, harmEffects }) {
 	const [edit, setEdit] = useState(false)
 	
 	function handleChange1a (e) {
@@ -396,26 +397,27 @@ function HarmTable({ harm }) {
 			<div class="wrapperHeader">Lvl. 3</div>
 			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_3a} placeholder="" onChange={handleChange3a} /></div>
 			<div/>
-			<div>Need Help</div>
+			<div>{harmEffects[3]}</div>
 			
 			<div class="wrapperHeader">Lvl. 2</div>
 			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2a} placeholder="" onChange={handleChange2a} /></div>
 			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2b} placeholder="" onChange={handleChange2b} /></div>
-			<div>-1d</div>
+			<div>{harmEffects[2]}</div>
 			
 			<div class="wrapperHeader">Lvl. 1</div>
 			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1a} placeholder="" onChange={handleChange1a} /></div>
 			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1b} placeholder="" onChange={handleChange1b} /></div>
-			<div>Less Effect</div>
+			<div>{harmEffects[1]}</div>
 		</div>
 	);
 }
 
-function HealingClock({ healing, setHealing }) {
+function HealingClock({ healing, setHealing, segments }) {
+	
 	const healingInfo = {
 		value: healing,
 		setValue: setHealing,
-		maxValue: 4
+		maxValue: segments
 	}
 	
 	return (
@@ -423,7 +425,8 @@ function HealingClock({ healing, setHealing }) {
 	);
 }
 
-function HealingButton({ healing, setHealing, harm }) {
+function HealingButton({ healing, setHealing, harm, segments }) {
+	
 	function handleClick() {
 		harm.setLvl_1a(harm.lvl_2a);
 		harm.setLvl_1b(harm.lvl_2b);
@@ -434,7 +437,7 @@ function HealingButton({ healing, setHealing, harm }) {
 	}
 	
 	return (
-		<button disabled={healing < 4} onClick={handleClick}>
+		<button disabled={healing < segments} onClick={handleClick}>
 			Reduce Harm
 		</button>
 	);
@@ -442,12 +445,12 @@ function HealingButton({ healing, setHealing, harm }) {
 
 function ArmorUse({ armor }) {
 	const handleChange = (event) => {
-		armor.setUset(event.target.checked);
+		armor.setUsed(event.target.checked);
 	}
 	
 	return (
 		<div>
-			<input type="checkbox" id={armor.name} checked={armor.used} onChange={handleChange} />
+			<input disabled={!armor.available} type="checkbox" id={armor.name} checked={armor.used} onChange={handleChange} />
 			<label for={armor.name}>{armor.name}</label>
 		</div>
 	);
@@ -487,12 +490,7 @@ function LoadSelector({ load, setLoad }) {
 	);
 }
 
-function LoadDisplay({ load, setLoad, playbook, inventory, setInventory }) {
-	const loadLimits = {
-		light: 3,
-		medium: 5,
-		heavy: 7
-	}
+function LoadDisplay({ load, setLoad, playbook, inventory, setInventory, limits, armor }) {
 	
 	let loadCurrent = 0;
 	Object.entries(GENERAL_ITEMS).forEach(([key, item]) => {
@@ -506,15 +504,22 @@ function LoadDisplay({ load, setLoad, playbook, inventory, setInventory }) {
 		}
 	});
 	
+	function handleClick() {
+		setInventory([]);
+		armor.forEach((a) => {
+			a.setUsed(false);
+		});
+	}
+	
 	return (
 		<div class="loadWrapper">
 			<div class="wrapperHeader">Load:</div>
 			<LoadSelector load={load} setLoad={setLoad} />
 			<div class="loadMonitor">
-				used {loadCurrent} of {loadLimits[load.toLowerCase()]}
+				used {loadCurrent} of {limits[load.toLowerCase()]}
 			</div>
 			<div>
-				<button disabled={load < 1} onClick={() => {setInventory([])}}>
+				<button disabled={load < 1} onClick={handleClick}>
 					Clear Load
 				</button>
 			</div>
@@ -599,7 +604,7 @@ function AbilityList({ abilityList, setAbilityList, playbook }) {
 	abilityList.forEach((ability) => {
 		let abilityInfo = SPECIAL_ABILITIES[ability]
 		rows.push(
-			<div><AbilityEntry name={abilityInfo.name} description={abilityInfo.description} /></div>
+			<div class="abilityRow"><AbilityEntry name={abilityInfo.name} description={abilityInfo.description} /></div>
 		);
 	});
 	
@@ -635,7 +640,6 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 	// const [coin, setCoin] = useState(0);
 	// const [stash, setStash] = useState(0);
 	// const [stress, setStress] = useState(0);
-	// const [maxStress, setMaxStress] = useState(9);
 	// const [trauma, setTrauma] = useState([]);
 	// const [harm1a, setHarm1a] = useState("");
 	// const [harm1b, setHarm1b] = useState("");
@@ -665,6 +669,16 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 	// const [load, setLoad] = useState("Light");
 	// const [itemsUsed, setItemsUsed] = useState([]);
 	// const [specialAbilities, setSpecialAbilities] = useState([]);
+	
+	
+	const normalArmorAvailable = characterInfo.itemsUsed.includes("Armor");
+	const heavyArmorAvailable = characterInfo.itemsUsed.includes("Armor") && characterInfo.itemsUsed.includes("+Heavy Armor");
+	const specialArmorAvailable = characterInfo.specialAbilities.filter(a => SPECIAL_ARMOR_ABILITIES.includes(a)).length > 0;
+	const maxStress = 9 + (characterInfo.specialAbilities.includes("Survivor") ? 1 : 0)+ (characterInfo.specialAbilities.includes("Steady") ? 1 : 0);
+	const healingClockSegments = characterInfo.specialAbilities.includes("Vigorous") ? 3 : 4;
+	const loadLimits = characterInfo.specialAbilities.includes("Mule") ? MULE_LOAD_LIMITS : LOAD_LIMITS;
+	const harmEffects = characterInfo.specialAbilities.includes("Tough as Nails") ? TOUGH_HARM_EFFECTS : HARM_EFFECTS;
+	const vengeful = characterInfo.specialAbilities.includes("Vengeful") ? true : false;
 	
 	const [editActions, setEditActions] = useState(false);
 	
@@ -864,13 +878,16 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 		trauma: {
 			value: characterInfo.trauma,
 			setValue: characterInfoSetters.setTrauma,
+		},
+		specialAbilities: {
+			value: characterInfo.specialAbilities
 		}
 	}
 	
 	const stressInfo = {
 		value: characterInfo.stress,
 		setValue: characterInfoSetters.setStress,
-		maxValue: characterInfo.maxStress
+		maxValue: maxStress
 	}
 	
 	const harm = {
@@ -887,9 +904,9 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 	}
 	
 	const armor = [
-		{name: "armor", used: characterInfo.armorNormal, setUsed: characterInfoSetters.setArmorNormal},
-		{name: "heavy", used: characterInfo.armorHeavy, setUsed: characterInfoSetters.setArmorHeavy},
-		{name: "special", used: characterInfo.armorSpecial, setUsed: characterInfoSetters.setArmorSpecial}
+		{name: "armor", used: characterInfo.armorNormal, setUsed: characterInfoSetters.setArmorNormal, available: normalArmorAvailable},
+		{name: "heavy", used: characterInfo.armorHeavy, setUsed: characterInfoSetters.setArmorHeavy, available: heavyArmorAvailable},
+		{name: "special", used: characterInfo.armorSpecial, setUsed: characterInfoSetters.setArmorSpecial, available: specialArmorAvailable}
 	]
 	
 	const playbookXPInfo = {
@@ -924,17 +941,17 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 					<TraumaTracker traumaList={characterInfo.trauma} />
 					</div>
 					<div>
-					<HealingClock healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} />
+					<HealingClock healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} segments={healingClockSegments} />
 					</div>
 					<div>
-					<HealingButton healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} harm={harm} />
+					<HealingButton healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} harm={harm} segments={healingClockSegments} />
 					</div>
 				</div>
 				<hr/>
-				<HarmTable harm={harm} />
+				<HarmTable harm={harm} harmEffects={harmEffects} />
 				<hr/>
 				<ArmorUses armorUses={armor} />
-				<LoadDisplay load={characterInfo.load} setLoad={characterInfoSetters.setLoad} playbook={characterInfo.playbook} inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} />
+				<LoadDisplay load={characterInfo.load} setLoad={characterInfoSetters.setLoad} playbook={characterInfo.playbook} inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} limits={loadLimits} armor={armor} />
 			</fieldset>
 			<br/>
 			
@@ -961,7 +978,7 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 					<br/>
 					<AbilityList abilityList={characterInfo.specialAbilities} setAbilityList={characterInfoSetters.setSpecialAbilities} playbook={characterInfo.playbook} />
 					<br/>
-					<XPTriggerList playbook={characterInfo.playbook} />
+					<XPTriggerList playbook={characterInfo.playbook} vengefulTrigger={vengeful} />
 				</div>
 			</fieldset>
 			
@@ -985,7 +1002,6 @@ function App() {
 	const [coin, setCoin] = useState(0);
 	const [stash, setStash] = useState(0);
 	const [stress, setStress] = useState(0);
-	const [maxStress, setMaxStress] = useState(9);
 	const [trauma, setTrauma] = useState([]);
 	const [harm1a, setHarm1a] = useState("");
 	const [harm1b, setHarm1b] = useState("");
@@ -1032,7 +1048,6 @@ function App() {
 		coin: coin,
 		stash: stash,
 		stress: stress,
-		maxStress: maxStress,
 		trauma: trauma,
 		harm1a: harm1a,
 		harm1b: harm1b,
@@ -1079,7 +1094,6 @@ function App() {
 		setCoin: (x) => {setCoin(x); saveOneCookie("coin", x)},
 		setStash: (x) => {setStash(x); saveOneCookie("stash", x)},
 		setStress: (x) => {setStress(x); saveOneCookie("stress", x)},
-		setMaxStress: (x) => {setMaxStress(x); saveOneCookie("maxStress", x)},
 		setTrauma: (x) => {setTrauma(x); saveOneCookie("trauma", x)},
 		setHarm1a: (x) => {setHarm1a(x); saveOneCookie("harm1a", x)},
 		setHarm1b: (x) => {setHarm1b(x); saveOneCookie("harm1b", x)},
@@ -1127,7 +1141,6 @@ function App() {
 		setCoin(loadOneCookie("coin", 0));
 		setStash(loadOneCookie("stash", 0));
 		setStress(loadOneCookie("stress", 0));
-		setMaxStress(loadOneCookie("maxStress", 9));
 		setTrauma(loadOneCookie("trauma", []));
 		setHarm1a(loadOneCookie("harm1a", ""));
 		setHarm1b(loadOneCookie("harm1b", ""));
@@ -1187,7 +1200,6 @@ function App() {
 		saveOneCookie("coin", coin);
 		saveOneCookie("stash", stash);
 		saveOneCookie("stress", stress);
-		saveOneCookie("maStress", maxStress);
 		saveOneCookie("trauma", trauma);
 		saveOneCookie("harm1a", harm1a);
 		saveOneCookie("harm1b", harm1b);
@@ -1388,7 +1400,7 @@ const GENERAL_ITEMS = {
 		cost: 2
 	},
 	armorHv: {
-		name: "+Heavy",
+		name: "+Heavy Armor",
 		cost: 3
 	},
 	gearBurg: {
@@ -1617,6 +1629,16 @@ const PLAYBOOK_ITEMS = {
 		},
 	}
 }
+
+const SPECIAL_ARMOR_ABILITIES = [
+	"Battleborn",
+	"Focused",
+	"Fortitude",
+	"Shadow",
+	"Subterfuge",
+	"Mastermind",
+	"Warded",
+]
 
 const SPECIAL_ABILITIES = {
 	"Battleborn": {
@@ -1903,6 +1925,11 @@ const SPECIAL_ABILITIES = {
 		description: "You may expend your special armor to resist a supernatural consequence, or to push yourself when you deal with arcane forces.",
 		playbook: "whisper"
 	},
+	"Steady": {
+		name: "Steady",
+		description: "(Crew advancement) +1 stress box",
+		playbook: "crew"
+	}
 }
 
 const XP_TRIGGERS = {
@@ -1916,5 +1943,29 @@ const XP_TRIGGERS = {
 }
 
 const TRAUMA_OPTIONS = ["Cold", "Haunted", "Obsessed", "Paranoid", "Reckless", "Soft", "Unstable", "Vicious"]
+
+const LOAD_LIMITS = {
+	"light": 3,
+	"medium": 5,
+	"heavy": 7,
+}
+
+const MULE_LOAD_LIMITS = {
+	"light": 5,
+	"medium": 7,
+	"heavy": 8,
+}
+
+const HARM_EFFECTS = {
+	3: "Need Help",
+	2: "-1d",
+	1: "Less Effect",
+}
+
+const TOUGH_HARM_EFFECTS = {
+	3: "-1d",
+	2: "Less Effect",
+	1: "",
+}
 
 export default App;
