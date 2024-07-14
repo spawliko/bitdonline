@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Cookies } from "react-cookie";
 
 import logo from './logo.svg';
 import './App.css';
 
+const cookie = new Cookies();
+
 function TrackBox({ label, index, value, setValue }) {
-	function handleClick() {
+	async function handleClick() {
 		if (value === index) {
 			setValue(index-1);
 		} else {
@@ -138,12 +141,6 @@ function XPTriggerList({ playbook }) {
 	);
 }
 
-function StressTracker({ stressInfo }) {
-	return (
-		<LabelTracker label="Stress" track={stressInfo} />
-	);
-}
-
 function TraumaTracker({ traumaList }) {
 	const traumaInfo = {
 		value: traumaList.length,
@@ -160,6 +157,26 @@ function TraumaTracker({ traumaList }) {
 
 function HarmTable({ harm }) {
 	const [edit, setEdit] = useState(false)
+	
+	function handleChange1a (e) {
+		harm.setLvl_1a(e.target.value);
+	}
+	
+	function handleChange1b (e) {
+		harm.setLvl_1b(e.target.value);
+	}
+	
+	function handleChange2a (e) {
+		harm.setLvl_2a(e.target.value);
+	}
+	
+	function handleChange2b (e) {
+		harm.setLvl_2b(e.target.value);
+	}
+	
+	function handleChange3a (e) {
+		harm.setLvl_3a(e.target.value);
+	}
 	
 	return (
 		<>
@@ -179,20 +196,20 @@ function HarmTable({ harm }) {
 				<tbody>
 					<tr>
 						<td>3</td>
-						<td><input type="text" disabled={!edit} readOnly={edit} value={harm.lvl_3a} placeholder="" onChange={(e) => harm.setLvl_3a(e.target.value)} /></td>
+						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_3a} placeholder="" onChange={handleChange3a} /></td>
 						<td/>
 						<td>Need Help</td>
 					</tr>
 					<tr>
 						<td>2</td>
-						<td><input type="text" disabled={!edit} readOnly={edit} value={harm.lvl_2a} placeholder="" onChange={(e) => harm.setLvl_2a(e.target.value)} /></td>
-						<td><input type="text" disabled={!edit} readOnly={edit} value={harm.lvl_2b} placeholder="" onChange={(e) => harm.setLvl_2b(e.target.value)} /></td>
+						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2a} placeholder="" onChange={handleChange2a} /></td>
+						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2b} placeholder="" onChange={handleChange2b} /></td>
 						<td>-1d</td>
 					</tr>
 					<tr>
 						<td>1</td>
-						<td><input type="text" disabled={!edit} readOnly={edit} value={harm.lvl_1a} placeholder="" onChange={(e) => harm.setLvl_1a(e.target.value)} /></td>
-						<td><input type="text" disabled={!edit} readOnly={edit} value={harm.lvl_1b} placeholder="" onChange={(e) => harm.setLvl_1b(e.target.value)} /></td>
+						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1a} placeholder="" onChange={handleChange1a} /></td>
+						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1b} placeholder="" onChange={handleChange1b} /></td>
 						<td>Less Effect</td>
 					</tr>
 				</tbody>
@@ -208,15 +225,37 @@ function HealingClock({ healing, setHealing }) {
 		setValue: setHealing,
 		maxValue: 4
 	}
+	
 	return (
 		<LabelTracker label="Healing Clock" track={healingInfo} />
 	);
 }
 
+function HealingButton({ healing, setHealing, harm }) {
+	function handleClick() {
+		harm.setLvl_1a(harm.lvl_2a);
+		harm.setLvl_1b(harm.lvl_2b);
+		harm.setLvl_2a(harm.lvl_3a);
+		harm.setLvl_2b("");
+		harm.setLvl_3a("");
+		setHealing(0);
+	}
+	
+	return (
+		<button disabled={healing < 4} onClick={handleClick}>
+			Reduce Harm
+		</button>
+	);
+}
+
 function ArmorUse({ armor }) {
+	const handleChange = (event) => {
+		armor.setUset(event.target.checked);
+	}
+	
 	return (
 		<div>
-			<input type="checkbox" id={armor.name} checked={armor.used} onChange={(e) => armor.setUsed(e.target.checked)} />
+			<input type="checkbox" id={armor.name} checked={armor.used} onChange={handleChange} />
 			<label for={armor.name}>{armor.name}</label>
 		</div>
 	);
@@ -323,7 +362,7 @@ function ItemCheckbox({ item, inventory, setInventory }) {
 	);
 }
 
-function ItemList({ label, inventory, setInventory, itemSource }) {
+function ItemList({ label, inventory, setInventory, itemSource  }) {
 	const itemBoxes = [];	
 	Object.entries(itemSource).forEach(([key, item]) => {
 		itemBoxes.push(
@@ -366,7 +405,201 @@ function AbilityList({ abilityList }) {
 	);
 }
 
-function CharacterSheet({ characterInfo }) {
+function CharacterSheet({ characterInfo, characterInfoSetters }) {
+	// const [name, setName] = useState("");
+	// const [alias, setAlias] = useState("");
+	// const [gender, setGender] = useState("");
+	// const [traits, setTraits] = useState("");
+	// const [clothes, setClothes] = useState("");
+	// const [heritage, setHeritage] = useState("");
+	// const [background, setBackground] = useState("");
+	// const [vice, setVice] = useState("");
+	// const [vicePurveyor, setVicePurveyor] = useState("");
+	// const [ally, setAlly] = useState("");
+	// const [nemesis, setNemesis] = useState("");
+	// const [playbook, setPlaybook] = useState("Cutter");
+	// const [coin, setCoin] = useState(0);
+	// const [stash, setStash] = useState(0);
+	// const [stress, setStress] = useState(0);
+	// const [maxStress, setMaxStress] = useState(9);
+	// const [trauma, setTrauma] = useState([]);
+	// const [harm1a, setHarm1a] = useState("");
+	// const [harm1b, setHarm1b] = useState("");
+	// const [harm2a, setHarm2a] = useState("");
+	// const [harm2b, setHarm2b] = useState("");
+	// const [harm3a, setHarm3a] = useState("");
+	// const [healing, setHealing] = useState(0);
+	// const [armorNormal, setArmorNormal] = useState(false);
+	// const [armorHeavy, setArmorHeavy] = useState(false);
+	// const [armorSpecial, setArmorSpecial] = useState(false);
+	// const [insightXP, setInsightXP] = useState(0);
+	// const [prowessXP, setProwessXP] = useState(0);
+	// const [resolveXP, setResolveXP] = useState(0);
+	// const [playbookXP, setPlaybookXP] = useState(0);
+	// const [hunt, setHunt] = useState(0);
+	// const [study, setStudy] = useState(0);
+	// const [survey, setSurvey] = useState(0);
+	// const [tinker, setTinker] = useState(0);
+	// const [finesse, setFinesse] = useState(0);
+	// const [prowl, setProwl] = useState(0);
+	// const [skirmish, setSkirmish] = useState(0);
+	// const [wreck, setWreck] = useState(0);
+	// const [attune, setAttune] = useState(0);
+	// const [command, setCommand] = useState(0);
+	// const [consort, setConsort] = useState(0);
+	// const [sway, setSway] = useState(0);
+	// const [load, setLoad] = useState("Light");
+	// const [itemsUsed, setItemsUsed] = useState([]);
+	// const [specialAbilities, setSpecialAbilities] = useState([]);
+	
+	const attributes = [
+	  {
+			name: "Insight",
+			actions: [
+				{name: "Hunt", value: characterInfo.hunt},
+				{name: "Study", value: characterInfo.study},
+				{name: "Survey", value: characterInfo.survey},
+				{name: "Tinker", value: characterInfo.tinker}
+			],
+			xp_track: {
+				value: characterInfo.insightXP,
+				setValue: characterInfoSetters.setInsightXP,
+				maxValue: 6
+			}
+		},
+		{
+			name: "Prowess",
+			actions: [
+				{name: "Finesse", value: characterInfo.finesse},
+				{name: "Skirmish", value: characterInfo.skirmish},
+				{name: "Prowl", value: characterInfo.prowl},
+				{name: "Wreck", value: characterInfo.wreck}
+			],
+			xp_track: {
+				value: characterInfo.prowessXP,
+				setValue: characterInfoSetters.setProwessXP,
+				maxValue: 6
+			}
+		},
+		{
+			name: "Resolve",
+			actions: [
+				{name: "Attune", value: characterInfo.attune},
+				{name: "Command", value: characterInfo.command},
+				{name: "Consort", value: characterInfo.consort},
+				{name: "Sway", value: characterInfo.sway}
+			],
+			xp_track: {
+				value: characterInfo.resolveXP,
+				setValue: characterInfoSetters.setResolveXP,
+				maxValue: 6
+			}
+		}
+	]
+	
+	const details = {
+		name: characterInfo.name,
+		alias: characterInfo.alias,
+		look: {
+			gender: characterInfo.gender,
+			traits: characterInfo.traits,
+			clothes: characterInfo.clothes
+		},
+		heritage: characterInfo.heritage,
+		background: characterInfo.background,
+		vice: characterInfo.vice,
+		vicePurveyor: characterInfo.vicePurveyor,
+		ally: characterInfo.ally,
+		nemesis: characterInfo.nemesis,
+		playbook: characterInfo.playbook,
+		coin: {
+			value: characterInfo.coin,
+			setValue: characterInfoSetters.setCoin,
+			maxValue: 4
+		},
+		stash: characterInfo.stash
+	}
+	
+	const stressInfo = {
+		value: characterInfo.stress,
+		setValue: characterInfoSetters.setStress,
+		maxValue: characterInfo.maxStress
+	}
+	
+	const harm = {
+		lvl_1a: characterInfo.harm1a,
+		setLvl_1a: characterInfoSetters.setHarm1a,
+		lvl_1b: characterInfo.harm1b,
+		setLvl_1b: characterInfoSetters.setHarm1b,
+		lvl_2a: characterInfo.harm2a,
+		setLvl_2a: characterInfoSetters.setHarm2a,
+		lvl_2b: characterInfo.harm2b,
+		setLvl_2b: characterInfoSetters.setHarm2b,
+		lvl_3a: characterInfo.harm3a,
+		setLvl_3a: characterInfoSetters.setHarm3a
+	}
+	
+	const armor = [
+		{name: "armor", used: characterInfo.armorNormal, setUsed: characterInfoSetters.setArmorNormal},
+		{name: "heavy", used: characterInfo.armorHeavy, setUsed: characterInfoSetters.setArmorHeavy},
+		{name: "special", used: characterInfo.armorSpecial, setUsed: characterInfoSetters.setArmorSpecial}
+	]
+	
+	const playbookXPInfo = {
+		value: characterInfo.playbookXP,
+		setValue: characterInfoSetters.setPlaybookXP,
+		maxValue: 8
+	}
+	
+	const attributeBlocks = [];
+	attributes.forEach((attribute) => {
+		attributeBlocks.push(
+			<>
+				<AttributeBlock attribute={attribute} />
+				<br/>
+			</>
+		);
+	});
+	
+	const playbookItems = PLAYBOOK_ITEMS[characterInfo.playbook.toLowerCase()];
+	
+	return (
+		<div>
+			<CharacterDetails characterDetails={details} />
+			<br/>
+			<LabelTracker label="Playbook XP" track={playbookXPInfo} />
+			<br/>
+			<LabelTracker label="Stress" track={stressInfo} />
+			<TraumaTracker traumaList={characterInfo.trauma} />
+			<br/>
+			<HarmTable harm={harm} />
+			<br/>
+			<HealingClock healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} />
+			<HealingButton healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} harm={harm} />
+			<br/>
+			<br/>
+			<ArmorUses armorUses={armor} />
+			<br/>
+			{attributeBlocks}
+			<br/>
+			<LoadDisplay load={characterInfo.load} setLoad={characterInfoSetters.setLoad} playbook={characterInfo.playbook} inventory={characterInfo.itemsUsed} />
+			<br/> 
+			<br/>
+			<ItemList label="Items" inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} itemSource={GENERAL_ITEMS} />
+			<br/>
+			<ItemList label="Playbook Items" inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} itemSource={playbookItems} />
+			<br/>
+			Special Abilities:
+			<br/>
+			<AbilityList abilityList={characterInfo.specialAbilities} />
+			<br/>
+			<br/>
+			<XPTriggerList playbook={characterInfo.playbook} />
+		</div>
+	);
+}
+
+function App() {
 	const [name, setName] = useState("");
 	const [alias, setAlias] = useState("");
 	const [gender, setGender] = useState("");
@@ -396,7 +629,7 @@ function CharacterSheet({ characterInfo }) {
 	const [insightXP, setInsightXP] = useState(0);
 	const [prowessXP, setProwessXP] = useState(0);
 	const [resolveXP, setResolveXP] = useState(0);
-	const [playbookXP, setPlaybokXP] = useState(0);
+	const [playbookXP, setPlaybookXP] = useState(0);
 	const [hunt, setHunt] = useState(0);
 	const [study, setStudy] = useState(0);
 	const [survey, setSurvey] = useState(0);
@@ -413,59 +646,12 @@ function CharacterSheet({ characterInfo }) {
 	const [itemsUsed, setItemsUsed] = useState([]);
 	const [specialAbilities, setSpecialAbilities] = useState([]);
 	
-	const attributes = [
-	  {
-			name: "Insight",
-			actions: [
-				{name: "Hunt", value: hunt},
-				{name: "Study", value: study},
-				{name: "Survey", value: survey},
-				{name: "Tinker", value: tinker}
-			],
-			xp_track: {
-				value: insightXP,
-				setValue: setInsightXP,
-				maxValue: 6
-			}
-		},
-		{
-			name: "Prowess",
-			actions: [
-				{name: "Finesse", value: finesse},
-				{name: "Skirmish", value: skirmish},
-				{name: "Prowl", value: prowl},
-				{name: "Wreck", value: wreck}
-			],
-			xp_track: {
-				value: prowessXP,
-				setValue: setProwessXP,
-				maxValue: 6
-			}
-		},
-		{
-			name: "Resolve",
-			actions: [
-				{name: "Attune", value: attune},
-				{name: "Command", value: command},
-				{name: "Consort", value: consort},
-				{name: "Sway", value: sway}
-			],
-			xp_track: {
-				value: resolveXP,
-				setValue: setResolveXP,
-				maxValue: 6
-			}
-		}
-	]
-	
-	const details = {
+	const characterInfo = {
 		name: name,
 		alias: alias,
-		look: {
-			gender: gender,
-			traits: traits,
-			clothes: clothes
-		},
+		gender: gender,
+		traits: traits,
+		clothes: clothes,
 		heritage: heritage,
 		background: background,
 		vice: vice,
@@ -473,100 +659,219 @@ function CharacterSheet({ characterInfo }) {
 		ally: ally,
 		nemesis: nemesis,
 		playbook: playbook,
-		coin: {
-			value: coin,
-			setValue: setCoin,
-			maxValue: 4
-		},
-		stash: stash
+		coin: coin,
+		stash: stash,
+		stress: stress,
+		maxStress: maxStress,
+		trauma: trauma,
+		harm1a: harm1a,
+		harm1b: harm1b,
+		harm2a: harm2a,
+		harm2b: harm2b,
+		harm3a: harm3a,
+		healing: healing,
+		armorNormal: armorNormal,
+		armorHeavy: armorHeavy,
+		armorSpecial: armorSpecial,
+		insightXP: insightXP,
+		prowessXP: prowessXP,
+		resolveXP: resolveXP,
+		playbookXP: playbookXP,
+		hunt: hunt,
+		study: study,
+		survey: survey,
+		tinker: tinker,
+		finesse: finesse,
+		prowl: prowl,
+		skirmish: skirmish,
+		wreck: wreck,
+		attune: attune,
+		command: command,
+		consort: consort,
+		sway: sway,
+		load: load,
+		itemsUsed: itemsUsed,
+		specialAbilities: specialAbilities
+	}
+	const characterInfoSetters = {
+		setName: (x) => {setName(x); saveOneCookie("name", x)},
+		setAlias: (x) => {setAlias(x); saveOneCookie("alias", x)},
+		setGender: (x) => {setGender(x); saveOneCookie("gender", x)},
+		setTraits: (x) => {setTraits(x); saveOneCookie("traits", x)},
+		setClothes: (x) => {setClothes(x); saveOneCookie("clothes", x)},
+		setHeritage: (x) => {setHeritage(x); saveOneCookie("heritage", x)},
+		setBackground: (x) => {setBackground(x); saveOneCookie("background", x)},
+		setVice: (x) => {setVice(x); saveOneCookie("vice", x)},
+		setVicePurveyor: (x) => {setVicePurveyor(x); saveOneCookie("vicePurveyor", x)},
+		setAlly: (x) => {setAlly(x); saveOneCookie("ally", x)},
+		setNemesis: (x) => {setNemesis(x); saveOneCookie("nemesis", x)},
+		setPlaybook: (x) => {setPlaybook(x); saveOneCookie("playbook", x)},
+		setCoin: (x) => {setCoin(x); saveOneCookie("coin", x)},
+		setStash: (x) => {setStash(x); saveOneCookie("stash", x)},
+		setStress: (x) => {setStress(x); saveOneCookie("stress", x)},
+		setMaxStress: (x) => {setMaxStress(x); saveOneCookie("maxStress", x)},
+		setTrauma: (x) => {setTrauma(x); saveOneCookie("trauma", x)},
+		setHarm1a: (x) => {setHarm1a(x); saveOneCookie("harm1a", x)},
+		setHarm1b: (x) => {setHarm1b(x); saveOneCookie("harm1b", x)},
+		setHarm2a: (x) => {setHarm2a(x); saveOneCookie("harm2a", x)},
+		setHarm2b: (x) => {setHarm2b(x); saveOneCookie("harm2b", x)},
+		setHarm3a: (x) => {setHarm3a(x); saveOneCookie("harm3a", x)},
+		setHealing: (x) => {setHealing(x); saveOneCookie("healing", x)},
+		setArmorNormal: (x) => {setArmorNormal(x); saveOneCookie("armorNormal", x)},
+		setArmorHeavy: (x) => {setArmorHeavy(x); saveOneCookie("armorHeavy", x)},
+		setArmorSpecial: (x) => {setArmorSpecial(x); saveOneCookie("armorSpecial", x)},
+		setInsightXP: (x) => {setInsightXP(x); saveOneCookie("insightXP", x)},
+		setProwessXP: (x) => {setProwessXP(x); saveOneCookie("prowessXP", x)},
+		setResolveXP: (x) => {setResolveXP(x); saveOneCookie("resolveXP", x)},
+		setPlaybookXP: (x) => {setPlaybookXP(x); saveOneCookie("playbookXP", x)},
+		setHunt: (x) => {setHunt(x); saveOneCookie("hunt", x)},
+		setStudy: (x) => {setStudy(x); saveOneCookie("study", x)},
+		setSurvey: (x) => {setSurvey(x); saveOneCookie("survey", x)},
+		setTinker: (x) => {setTinker(x); saveOneCookie("tinker", x)},
+		setFinesse: (x) => {setFinesse(x); saveOneCookie("finesse", x)},
+		setProwl: (x) => {setProwl(x); saveOneCookie("prowl", x)},
+		setSkirmish: (x) => {setSkirmish(x); saveOneCookie("skirmish", x)},
+		setWreck: (x) => {setWreck(x); saveOneCookie("wreck", x)},
+		setAttune: (x) => {setAttune(x); saveOneCookie("attune", x)},
+		setCommand: (x) => {setCommand(x); saveOneCookie("command", x)},
+		setConsort: (x) => {setConsort(x); saveOneCookie("consort", x)},
+		setSway: (x) => {setSway(x); saveOneCookie("sway", x)},
+		setLoad: (x) => {setLoad(x); saveOneCookie("load", x)},
+		setItemsUsed: (x) => {setItemsUsed(x); saveOneCookie("itemsUsed", x)},
+		setSpecialAbilities: (x) => {setSpecialAbilities(x); saveOneCookie("specialAbilities", x)}
+	}
+		
+	function loadCookie() {
+		setName(loadOneCookie("name", ""));
+		setAlias(loadOneCookie("alias", ""));
+		setGender(loadOneCookie("gender", ""));
+		setTraits(loadOneCookie("traits", ""));
+		setClothes(loadOneCookie("clotes", ""));
+		setHeritage(loadOneCookie("heritage", ""));
+		setBackground(loadOneCookie("background", ""));
+		setVice(loadOneCookie("vice", ""));
+		setVicePurveyor(loadOneCookie("vicePurveyor", ""));
+		setAlly(loadOneCookie("ally", ""));
+		setNemesis(loadOneCookie("nemesis", ""));
+		setPlaybook(loadOneCookie("playbook", "Cutter"));
+		setCoin(loadOneCookie("coin", 0));
+		setStash(loadOneCookie("stash", 0));
+		setStress(loadOneCookie("stress", 0));
+		setMaxStress(loadOneCookie("maxStress", 9));
+		setTrauma(loadOneCookie("trauma", []));
+		setHarm1a(loadOneCookie("harm1a", ""));
+		setHarm1b(loadOneCookie("harm1b", ""));
+		setHarm2a(loadOneCookie("harm2a", ""));
+		setHarm2b(loadOneCookie("harm2b", ""));
+		setHarm3a(loadOneCookie("harm3a", ""));
+		setHealing(loadOneCookie("healing", 0));
+		setArmorNormal(loadOneCookie("armorNormal", false));
+		setArmorHeavy(loadOneCookie("armorHeavy", false));
+		setArmorSpecial(loadOneCookie("armorSpecial", false));
+		setInsightXP(loadOneCookie("insightXP", 0));
+		setProwessXP(loadOneCookie("prowessXP", 0));
+		setResolveXP(loadOneCookie("resolveXP", 0));
+		setPlaybookXP(loadOneCookie("playbookXP", 0));
+		setHunt(loadOneCookie("hunt", 0));
+		setStudy(loadOneCookie("study", 0));
+		setSurvey(loadOneCookie("survey", 0));
+		setTinker(loadOneCookie("tinker", 0));
+		setFinesse(loadOneCookie("finesse", 0));
+		setProwl(loadOneCookie("prowl", 0));
+		setSkirmish(loadOneCookie("skirmish", 0));
+		setWreck(loadOneCookie("wreck", 0));
+		setAttune(loadOneCookie("attune", 0));
+		setCommand(loadOneCookie("command", 0));
+		setConsort(loadOneCookie("consort", 0));
+		setSway(loadOneCookie("sway", 0));
+		setLoad(loadOneCookie("load", "Light"));
+		setItemsUsed(loadOneCookie("itemsUsed", []));
+		setSpecialAbilities(loadOneCookie("specialAbilities", []));
 	}
 	
-	const stressInfo = {
-		value: stress,
-		setValue: setStress,
-		maxValue: maxStress
+	function loadOneCookie(label, _default) {
+		let value = cookie.get(label);
+		if (value === undefined) {
+			value = _default
+		}
+		return value;
 	}
 	
-	const harm = {
-		lvl_1a: harm1a,
-		setLvl_1a: setHarm1a,
-		lvl_1b: harm1b,
-		setLvl_1b: setHarm1b,
-		lvl_2a: harm2a,
-		setLvl_2a: setHarm2a,
-		lvl_2b: harm2b,
-		setLvl_2b: setHarm2b,
-		lvl_3a: harm3a,
-		setLvl_3a: setHarm3a
+	function saveOneCookie(label, value) {
+		cookie.set(label, value, { path: "/" });
 	}
 	
-	const armor = [
-		{name: "armor", used: armorNormal, setUsed: setArmorNormal},
-		{name: "heavy", used: armorHeavy, setUsed: setArmorHeavy},
-		{name: "special", used: armorSpecial, setUsed: setArmorSpecial}
-	]
-	
-	const playbookXPInfo = {
-		value: playbookXP,
-		setValue: setPlaybokXP,
-		maxValue: 8
+	function saveCookie() {
+		saveOneCookie("name", name);
+		saveOneCookie("alias", alias);
+		saveOneCookie("gender", gender);
+		saveOneCookie("traits", traits);
+		saveOneCookie("clothes", clothes);
+		saveOneCookie("heritage", heritage);
+		saveOneCookie("background", background);
+		saveOneCookie("vice", vice);
+		saveOneCookie("vicePurveyor", vicePurveyor);
+		saveOneCookie("ally", ally);
+		saveOneCookie("nemesis", nemesis);
+		saveOneCookie("playbook", playbook);
+		saveOneCookie("coin", coin);
+		saveOneCookie("stash", stash);
+		saveOneCookie("stress", stress);
+		saveOneCookie("maStress", maxStress);
+		saveOneCookie("trauma", trauma);
+		saveOneCookie("harm1a", harm1a);
+		saveOneCookie("harm1b", harm1b);
+		saveOneCookie("harm2a", harm2a);
+		saveOneCookie("harm2b", harm2b);
+		saveOneCookie("harm3a", harm3a);
+		saveOneCookie("healing", healing);
+		saveOneCookie("armorNormal", armorNormal);
+		saveOneCookie("armorHeavy", armorHeavy);
+		saveOneCookie("armorSpecial", armorSpecial);
+		saveOneCookie("insightXP", insightXP);
+		saveOneCookie("prowessXP", prowessXP);
+		saveOneCookie("resolveXP", resolveXP);
+		saveOneCookie("playbookXP", playbookXP);
+		saveOneCookie("hunt", hunt);
+		saveOneCookie("study", study);
+		saveOneCookie("survey", survey);
+		saveOneCookie("tinker", tinker);
+		saveOneCookie("finesse", finesse);
+		saveOneCookie("prowl", prowl);
+		saveOneCookie("skirmish", skirmish);
+		saveOneCookie("wreck", wreck);
+		saveOneCookie("attune", attune);
+		saveOneCookie("command", command);
+		saveOneCookie("consort", consort);
+		saveOneCookie("sway", sway);
+		saveOneCookie("load", load);
+		saveOneCookie("itemsUsed", itemsUsed);
+		saveOneCookie("specialAbilities", specialAbilities);
 	}
 	
-	const attributeBlocks = [];
-	attributes.forEach((attribute) => {
-		attributeBlocks.push(
-			<>
-				<AttributeBlock attribute={attribute} />
-				<br/>
-			</>
-		);
-	});
+	useEffect(() => {loadCookie()}, []);
 	
-	const playbookItems = PLAYBOOK_ITEMS[playbook.toLowerCase()];
+	let exportName = "bitdonline_"+name+".json"
 	
-	return (
-		<div>
-			<CharacterDetails characterDetails={details} />
-			<br/>
-			<LabelTracker label="Playbook XP" track={playbookXPInfo} />
-			<br/>
-			<StressTracker stressInfo={stressInfo} />
-			<TraumaTracker traumaList={trauma} />
-			<br/>
-			<HarmTable harm={harm} />
-			<br/>
-			<HealingClock healing={healing} setHealing={setHealing} />
-			<br/>
-			<ArmorUses armorUses={armor} />
-			<br/>
-			{attributeBlocks}
-			<br/>
-			<LoadDisplay load={load} setLoad={setLoad} playbook={playbook} inventory={itemsUsed} />
-			<br/> 
-			<br/>
-			<ItemList label="Items" inventory={itemsUsed} setInventory={setItemsUsed} itemSource={GENERAL_ITEMS} />
-			<br/>
-			<ItemList label="Playbook Items" inventory={itemsUsed} setInventory={setItemsUsed} itemSource={playbookItems} />
-			<br/>
-			Special Abilities:
-			<br/>
-			<AbilityList abilityList={specialAbilities} />
-			<br/>
-			<br/>
-			<XPTriggerList playbook={playbook} />
-		</div>
-	);
-}
-
-function App() {
+	const [importName, setImportName] = useState()
+	
 	return (
 	  <>
-			<CharacterSheet characterInfo={SHEET} />
+			<CharacterSheet characterInfo={characterInfo} characterInfoSetters={characterInfoSetters} />
 			<br/>
+			<button onClick={saveCookie}>Save Character</button>
+			<br/>
+			<a
+				href={`data:text/json;charset=utf-8,${encodeURIComponent(
+					JSON.stringify(characterInfo)
+				)}`}
+				download={exportName}
+			>
+				{`Export Character`}
+			</a>
 		</>
 	);
 }
-
 
 const SHEET = {
 	details: {
