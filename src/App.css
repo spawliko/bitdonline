@@ -28,6 +28,96 @@
   color: #61dafb;
 }
 
+.tracker {
+	display: flex;
+}
+
+.trackerLabel {
+	flex: 1;
+	font-size: 20px;
+}
+
+.trackerBoxes {
+	flex: 2;
+	float: left;
+	margin-right: 10px;
+}
+
+.sectionHeader {
+  font-style: bold;
+	font-size: calc(28px);
+}
+
+.toplevelWrapper {
+  display: grid;
+  grid-template-columns: 680px;
+}
+
+.detailsWrapper {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+}
+
+.statusWrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+.harmTableWrapper {
+  display: grid;
+  grid-template-columns: 1fr 4fr 4fr 2fr;
+}
+
+.armorWrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.loadWrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.attributeBlockWrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.attributeBlock {
+  display: grid;
+  grid-template-columns: 1fr;
+	
+	margin-bottom: 20px;
+}
+
+.actionList {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+}
+
+.actionRow {
+	display: flex;
+}
+
+.actionLabel {
+	display: flex;
+	flex: 1;
+	font-size: 20px;
+	margin-right: 20px;
+}
+
+.actionDots {
+	display: flex;
+	flex: 1;
+	font-size: 20px;
+	margin-right: 20px;
+}
+
+.wrapperHeader {
+  font-style: bold;
+	font-size: calc(24px);
+}
+
 .trackBoxOpen {
 	border: 1px outset black;
 	background-color: white;
@@ -40,4 +130,92 @@
 	background-color: orange;
 	height: 50px;
 	width: 25px;
+}
+
+.actionDotOpen {
+	border: 1px outset black;
+	border-radius: 100%;
+	background-color: white;
+	height: 25px;
+	width: 25px;
+}
+
+.actionDotFill {
+	border: 1px outset black;
+	border-radius: 100%;
+	background-color: black;
+	height: 25px;
+	width: 25px;
+}
+
+.dotDelimiterBar {
+	margin-right: 2px;
+	margin-left: 2px;
+	background-color: black;
+	height: 25px;
+	width: 1px;
+}
+
+.dotDelimiterSpace {
+	height: 25px;
+	width: 1px;
+	float: left;
+}
+
+.detailTextBoxShow {
+	display: contents;
+	visibility: visible;
+	float: right;
+}
+
+.detailTextBoxHide {
+	display: none;
+	visibility: hidden;
+}
+
+.detailChecklistShow {
+	display: contents;
+	visibility: visible;
+	float: right;
+}
+
+.detailChecklistHide {
+	display: none;
+	visibility: hidden;
+}
+
+.detailDropdownShow {
+	display: contents;
+	visibility: visible;
+	float: right;
+}
+
+.detailDropdownHide {
+	display: none;
+	visibility: hidden;
+}
+
+.detailValueShow {
+	display: contents;
+	visibility: visible;
+	float: right;
+}
+
+.detailValueHide {
+	display: none;
+	visibility: hidden;
+}
+
+.loadSelector {
+	font-size: 20px;
+	margin-right: 20px;
+}
+
+.loadMonitor {
+	font-size: 20px;
+}
+
+.inventoryWrapper {
+	display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
 }

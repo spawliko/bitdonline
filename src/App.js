@@ -29,103 +29,271 @@ function Track({ label, size, value, setValue }) {
 		);
 	}
 	return (
-		<>
+		<div class="trackerBoxes">
 			{boxes}
-		</>
+		</div>
 	);
 }
 
 function LabelTracker({ label, track }) {
 	let track_id = "track_"+label
 	return (
-		<tr>
-			<td>{label}</td>
-			<td><Track id={track_id} label={label} size={track.maxValue} value={track.value} setValue={track.setValue} /></td>
-		</tr>
+		<div class="tracker">
+			<div class="trackerLabel">{label}</div>
+			<Track id={track_id} label={label} size={track.maxValue} value={track.value} setValue={track.setValue} />
+		</div>
 	);
 }
 
-function ActionRating({ action }) {
+function ActionDot({ index, value, setValue, edit }) {
+	async function handleClick() {
+		if (value === index) {
+			setValue(index-1);
+		} else {
+			setValue(index);
+		}
+	}
+	
 	return (
-		<tr>
-			<td>{action.name}</td>
-			<td>{action.value} of 4</td>
-		</tr>
+		<button class={value < index ? "actionDotOpen" : "actionDotFill"} disabled={!edit} onClick={handleClick} ></button>
 	);
 }
 
-function AttributeBlock({ attribute }) {
+function ActionRating({ action, edit }) {
+	const dots = [];
+	for (let i = 0; i < 4; i++) {
+		dots.push(
+			<>
+				<td>
+					<ActionDot index={i+1} value={action.value} setValue={action.setValue} edit={edit} />
+				</td>
+				<td>
+					<div class={i === 0 ? "dotDelimiterBar": "dotDelimiterSpace"}/>
+				</td>
+			</>
+		);
+	}
+	return (
+		<>
+			<div class="actionLabel">{action.name}</div>
+			<div class="actionDots">{dots}</div>
+		</>
+	);
+}
+
+function AttributeBlock({ attribute, edit }) {	
 	const rows = [];
 	attribute.actions.forEach((action) => {
 		rows.push(
-			<ActionRating action={action} />
+			<ActionRating class="actionRow" action={action} edit={edit} />
 		);
 	});
 
 	return (
-		<table>
-			<thead><LabelTracker label={attribute.name} track={attribute.xp_track} /></thead>
-			<tbody>{rows}</tbody>
-		</table>
+		<div class="attributeBlock">
+			<div><LabelTracker label={attribute.name} track={attribute.xp_track} /></div>
+			<div class="actionList">{rows}</div>
+		</div>
 	);
 }
 
 function CharacterDetails({ characterDetails }) {
+	const [edit, setEdit] = useState(false)
+	
+	function options(detail, edit) {
+		const ops = [];
+		detail.choices.forEach((op) => {
+			ops.push(
+				<option value={op}>{op}</option>
+			)
+		});
+		
+		return (
+			<select value={detail.value} onChange={(e) => {detail.setValue(e.target.value)}} disabled={!edit}>
+				{ops}
+			</select>
+		);
+	}
+	
 	return (
+		<fieldset>
+			<legend class="sectionHeader">Details:</legend>
+			<div class="detailsWrapper">
+				<div class="wrapperHeader">Name:</div>
+				<div>
+					<div class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.name.value} placeholder="Enter Name" onChange={(e) => {characterDetails.name.setValue(e.target.value)}} /></div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.name.value}</div>
+				</div>
+				<div class="wrapperHeader">Alias:</div>
+				<div>
+					<div class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.alias.value} placeholder="Enter Alias" onChange={(e) => {characterDetails.alias.setValue(e.target.value)}} /></div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.alias.value}</div>
+				</div>
+			</div>
+			<hr/>
+			<div class="detailsWrapper">
+				<div class="wrapperHeader">Look:</div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.gender, edit)}</div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.gender.value}, {characterDetails.traits.value}, {characterDetails.clothes.value}</div>
+				</div>
+				<div></div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.traits, edit)}</div>
+				</div>
+				<div></div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.clothes, edit)}</div>
+				</div>
+				<div></div>
+				<div>
+				</div>
+				<div class="wrapperHeader">Heritage:</div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.heritage, edit)}</div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.heritage.value}</div>
+				</div>
+				<div class="wrapperHeader">Background:</div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.background, edit)}</div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.background.value}</div>
+				</div>
+				<div class="wrapperHeader">Vice:</div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.vice, edit)}</div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.vice.value}</div>
+				</div>
+				<div class="wrapperHeader">Vice Purveyor:</div>
+				<div>
+					<div class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.vicePurveyor.value} placeholder="Enter Vice Purveyor" onChange={(e) => {characterDetails.vicePurveyor.setValue(e.target.value)}} /></div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.vicePurveyor.value}</div>
+				</div>
+				<div class="wrapperHeader">Ally:</div>
+				<div>
+					<div class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.ally.value} placeholder="Enter Ally" onChange={(e) => {characterDetails.ally.setValue(e.target.value)}} /></div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.ally.value}</div>
+				</div>
+				<div class="wrapperHeader">Nemesis:</div>
+				<div>
+					<div class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.nemesis.value} placeholder="Enter Nemesis" onChange={(e) => {characterDetails.nemesis.setValue(e.target.value)}} /></div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.nemesis.value}</div>
+				</div>
+				<div class="wrapperHeader">Trauma:</div>
+				<div>
+					<div class={edit ? "detailChecklistShow" : "detailChecklistHide"}>
+						<TraumaSelector trauma={characterDetails.trauma.value} setTrauma={characterDetails.trauma.setValue} />
+					</div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.trauma.value.join(", ")}</div>
+				</div>
+			</div>
+			<hr/>
+			<div class="detailsWrapper">
+				<div class="wrapperHeader">Playbook:</div>
+				<div>
+					<div class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.playbook, edit)}</div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.playbook.value}</div>
+				</div>
+				<div class="wrapperHeader">Coin</div>
+				<div>
+					<Track label="coin" size={characterDetails.coin.maxValue} value={characterDetails.coin.value} setValue={characterDetails.coin.setValue} />
+				</div>
+				<div class="wrapperHeader">Stash:</div>
+				<div>
+					<div class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.stash.value} placeholder="0" onChange={(e) => {characterDetails.stash.setValue(e.target.value)}} /></div>
+					<div class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.stash.value}</div>
+				</div>
+				<br/>
+				<br/>
+				<div>
+					<button onClick={() => setEdit(!edit)} type="button" className="btn btn-primary">
+						{edit ? "Lock Character Details" : "Edit Character Details"}
+					</button>
+				</div>
+			</div>
+		</fieldset>
+	);
+	
+/* 	return (
 	  <table>
-			<thead></thead>
+			<thead>
+				<td>Character Details:</td>
+				<td>
+					<button onClick={() => setEdit(!edit)} type="button" className="btn btn-primary">
+						{edit ? "Lock Character Details" : "Edit Character Details"}
+					</button>
+				</td>
+			</thead>
 			<tbody>
 				<tr>
 					<td>Name:</td>
-					<td>{characterDetails.name}</td>
+					<td class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.name.value} placeholder="Enter Name" onChange={(e) => {characterDetails.name.setValue(e.target.value)}} /></td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.name.value}</td>
 				</tr>
 				<tr>
 					<td>Alias:</td>
-					<td>{characterDetails.alias}</td>
+					<td class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.alias.value} placeholder="Enter Alias" onChange={(e) => {characterDetails.alias.setValue(e.target.value)}} /></td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.alias.value}</td>
 				</tr>
 				<tr>
 					<td>Look:</td>
-					<td>{characterDetails.look.gender}, {characterDetails.look.traits}, {characterDetails.look.clothes}</td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.gender, edit)}</td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.gender.value}, {characterDetails.traits.value}, {characterDetails.clothes.value}</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.traits, edit)}</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.clothes, edit)}</td>
+				</tr>
+				<tr>
+					<td></td>
 				</tr>
 				<tr>
 					<td>Heritage:</td>
-					<td>{characterDetails.heritage}</td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.heritage, edit)}</td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.heritage.value}</td>
 				</tr>
 				<tr>
 					<td>Background:</td>
-					<td>{characterDetails.background}</td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.background, edit)}</td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.background.value}</td>
 				</tr>
 				<tr>
 					<td>Vice:</td>
-					<td>{characterDetails.vice}</td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.vice, edit)}</td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.vice.value}</td>
 				</tr>
 				<tr>
 					<td>Vice Purveyor:</td>
-					<td>{characterDetails.vicePurveyor}</td>
+					<td class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.vicePurveyor.value} placeholder="Enter Vice Purveyor" onChange={(e) => {characterDetails.vicePurveyor.setValue(e.target.value)}} /></td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.vicePurveyor.value}</td>
 				</tr>
 				<tr>
 					<td>Ally:</td>
-					<td>{characterDetails.ally}</td>
+					<td class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.ally.value} placeholder="Enter Ally" onChange={(e) => {characterDetails.ally.setValue(e.target.value)}} /></td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.ally.value}</td>
 				</tr>
 				<tr>
 					<td>Nemesis:</td>
-					<td>{characterDetails.nemesis}</td>
+					<td class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.nemesis.value} placeholder="Enter Nemesis" onChange={(e) => {characterDetails.nemesis.setValue(e.target.value)}} /></td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.nemesis.value}</td>
 				</tr>
-				<br/>
 				<tr>
 					<td>Playbook:</td>
-					<td>{characterDetails.playbook}</td>
+					<td class={edit ? "detailDropdownShow" : "detailDropdownHide"}>{options(characterDetails.playbook, edit)}</td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.playbook.value}</td>
 				</tr>
-				<tr>
-					<LabelTracker label="Coin" track={characterDetails.coin} />
-				</tr>
+				<LabelTracker label="Coin" track={characterDetails.coin} />
 				<tr>
 					<td>Stash:</td>
-					<td>{characterDetails.stash}</td>
+					<td class={edit ? "detailTextBoxShow" : "detailTextBoxHide"}><input type="text" disabled={!edit} readOnly={!edit} value={characterDetails.stash.value} placeholder="0" onChange={(e) => {characterDetails.stash.setValue(e.target.value)}} /></td>
+					<td class={!edit ? "detailValueShow" : "detailValueHide"}>{characterDetails.stash.value}</td>
 				</tr>
 			</tbody>
 		</table>
-	);
+	); */
 }
 
 function XPTriggerList({ playbook }) {
@@ -155,6 +323,43 @@ function TraumaTracker({ traumaList }) {
 	);
 }
 
+function TraumaBox({ name, trauma, setTrauma }) {
+	function handleChange(e) {
+		if (e.target.checked) {
+			setTrauma([
+				...trauma,
+				name
+			]);
+		} else {
+			setTrauma(trauma.filter(a => a !== name));
+		}
+	}
+	
+	let traumaSelected = trauma.includes(name);
+	
+	return (
+		<div>
+			<input type="checkbox" checked={traumaSelected} onChange={handleChange} />
+			{name}
+		</div>
+	);
+}
+
+function TraumaSelector({ trauma, setTrauma }) {
+	const traumaBoxes = [];
+	TRAUMA_OPTIONS.forEach((op) => {
+		traumaBoxes.push(
+			<TraumaBox name={op} trauma={trauma} setTrauma={setTrauma} />
+		);
+	});
+	
+	return (
+		<div class="traumaWrapper">
+			{traumaBoxes}
+		</div>
+	);
+}
+
 function HarmTable({ harm }) {
 	const [edit, setEdit] = useState(false)
 	
@@ -179,43 +384,30 @@ function HarmTable({ harm }) {
 	}
 	
 	return (
-		<>
-			<table>
-				<thead>
-					<tr>
-						<td>Harm</td>
-						<td/>
-						<td/>
-						<td>
-							<button onClick={() => setEdit(!edit)} type="button" className="btn btn-primary">
-								{edit ? "Lock Harm" : "Edit Harm"}
-							</button>
-						</td>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>3</td>
-						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_3a} placeholder="" onChange={handleChange3a} /></td>
-						<td/>
-						<td>Need Help</td>
-					</tr>
-					<tr>
-						<td>2</td>
-						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2a} placeholder="" onChange={handleChange2a} /></td>
-						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2b} placeholder="" onChange={handleChange2b} /></td>
-						<td>-1d</td>
-					</tr>
-					<tr>
-						<td>1</td>
-						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1a} placeholder="" onChange={handleChange1a} /></td>
-						<td><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1b} placeholder="" onChange={handleChange1b} /></td>
-						<td>Less Effect</td>
-					</tr>
-				</tbody>
-			</table>
+		<div class="harmTableWrapper">
+			<div class="wrapperHeader">Harm</div>
+			<div/>
+			<div/>
+			<div>
+				<button onClick={() => setEdit(!edit)} type="button" className="btn btn-primary">
+					{edit ? "Lock Harm" : "Edit Harm"}
+				</button>
+			</div>
+			<div class="wrapperHeader">Lvl. 3</div>
+			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_3a} placeholder="" onChange={handleChange3a} /></div>
+			<div/>
+			<div>Need Help</div>
 			
-		</>
+			<div class="wrapperHeader">Lvl. 2</div>
+			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2a} placeholder="" onChange={handleChange2a} /></div>
+			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_2b} placeholder="" onChange={handleChange2b} /></div>
+			<div>-1d</div>
+			
+			<div class="wrapperHeader">Lvl. 1</div>
+			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1a} placeholder="" onChange={handleChange1a} /></div>
+			<div><input type="text" disabled={!edit} readOnly={!edit} value={harm.lvl_1b} placeholder="" onChange={handleChange1b} /></div>
+			<div>Less Effect</div>
+		</div>
 	);
 }
 
@@ -265,19 +457,37 @@ function ArmorUses({ armorUses }) {
 	const rows = [];
 	armorUses.forEach((armor) => {
 		rows.push(
-			<ArmorUse armor={armor} />
+			<div>
+				<ArmorUse armor={armor} />
+			</div>
 		);
 	});
 	
 	return (
-		<div>
-			Armor:
+		<div class="armorWrapper">
+			<div class="wrapperHeader">Armor:</div>
 			{rows}
 		</div>
 	);
 }
 
-function LoadDisplay({ load, setLoad, playbook, inventory }) {
+function LoadSelector({ load, setLoad }) {
+	const handleChange = (event) => {
+		setLoad(event.target.value);
+	};
+	
+	return (
+		<>
+			<select class="loadSelector" value={load} onChange={handleChange}>
+				<option value="Light">Light</option>
+				<option value="Medium">Medium</option>
+				<option value="Heavy">Heavy</option>
+			</select>
+		</>
+	);
+}
+
+function LoadDisplay({ load, setLoad, playbook, inventory, setInventory }) {
 	const loadLimits = {
 		light: 3,
 		medium: 5,
@@ -297,25 +507,18 @@ function LoadDisplay({ load, setLoad, playbook, inventory }) {
 	});
 	
 	return (
-		<>
-			Load: <LoadSelector load={load} setLoad={setLoad} />
-			<br/>
-			used {loadCurrent} of {loadLimits[load.toLowerCase()]}
-		</>
-	);
-}
-
-function LoadSelector({ load, setLoad }) {
-	const handleChange = (event) => {
-		setLoad(event.target.value);
-	};
-	
-	return (
-		<select value={load} onChange={handleChange}>
-			<option value="Light">Light</option>
-			<option value="Medium">Medium</option>
-			<option value="Heavy">Heavy</option>
-		</select>
+		<div class="loadWrapper">
+			<div class="wrapperHeader">Load:</div>
+			<LoadSelector load={load} setLoad={setLoad} />
+			<div class="loadMonitor">
+				used {loadCurrent} of {loadLimits[load.toLowerCase()]}
+			</div>
+			<div>
+				<button disabled={load < 1} onClick={() => {setInventory([])}}>
+					Clear Load
+				</button>
+			</div>
+		</div>
 	);
 }
 
@@ -341,7 +544,7 @@ function ItemCheckbox({ item, inventory, setInventory }) {
 	
 	const itemLabel = [];
 	
-	if (item.cost < 1) {
+	if (item.cost === undefined || item.cost < 1) {
 		linkedBoxes.push(
 		  <input type="checkbox" checked={itemUsed} onChange={handleChange} />
 		);
@@ -355,10 +558,10 @@ function ItemCheckbox({ item, inventory, setInventory }) {
 	}
 	
 	return (
-		<>
+		<div>
 			{linkedBoxes}
 			{itemLabel}
-		</>
+		</div>
 	);
 }
 
@@ -366,17 +569,18 @@ function ItemList({ label, inventory, setInventory, itemSource  }) {
 	const itemBoxes = [];	
 	Object.entries(itemSource).forEach(([key, item]) => {
 		itemBoxes.push(
-			<>
-				<ItemCheckbox item={item} inventory={inventory} setInventory={setInventory} />
-				<br/>
-			</>
+			<ItemCheckbox item={item} inventory={inventory} setInventory={setInventory} />
 		);
 	});
 	
 	return (
 		<details>
-			<summary>{label}:</summary>
-			<p>{itemBoxes}</p>
+			<summary class="wrapperHeader">{label}:</summary>
+			<p>
+			  <div class="inventoryWrapper">
+					{itemBoxes}
+				</div>
+			</p>
 		</details>
 	);
 }
@@ -389,18 +593,28 @@ function AbilityEntry({ name, description }) {
 	);
 }
 
-function AbilityList({ abilityList }) {
+function AbilityList({ abilityList, setAbilityList, playbook }) {
+	const [showOtherPlaybooks, setShowOtherPlaybooks] = useState(false);
 	const rows = [];
 	abilityList.forEach((ability) => {
 		let abilityInfo = SPECIAL_ABILITIES[ability]
 		rows.push(
-			<AbilityEntry name={abilityInfo.name} description={abilityInfo.description} />
+			<div><AbilityEntry name={abilityInfo.name} description={abilityInfo.description} /></div>
 		);
 	});
 	
+	let abilitySource = Object.values(SPECIAL_ABILITIES).filter(a => showOtherPlaybooks || a.playbook.toLowerCase() === playbook.toLowerCase());
+	
 	return (
 		<>
+			<div class="wrapperHeader">Special Abilities:</div>
 			{rows}
+			<hr/>
+			<label>
+				<input type="checkbox" checked={showOtherPlaybooks} onChange={(e) => setShowOtherPlaybooks(e.target.checked)} />
+				Show abilities from other playbooks
+			</label>
+			<ItemList label="Available Abilities" inventory={abilityList} setInventory={setAbilityList} itemSource={abilitySource} />
 		</>
 	);
 }
@@ -452,14 +666,16 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 	// const [itemsUsed, setItemsUsed] = useState([]);
 	// const [specialAbilities, setSpecialAbilities] = useState([]);
 	
+	const [editActions, setEditActions] = useState(false);
+	
 	const attributes = [
 	  {
 			name: "Insight",
 			actions: [
-				{name: "Hunt", value: characterInfo.hunt},
-				{name: "Study", value: characterInfo.study},
-				{name: "Survey", value: characterInfo.survey},
-				{name: "Tinker", value: characterInfo.tinker}
+				{name: "Hunt", value: characterInfo.hunt, setValue: characterInfoSetters.setHunt},
+				{name: "Study", value: characterInfo.study, setValue: characterInfoSetters.setStudy},
+				{name: "Survey", value: characterInfo.survey, setValue: characterInfoSetters.setSurvey},
+				{name: "Tinker", value: characterInfo.tinker, setValue: characterInfoSetters.setTinker}
 			],
 			xp_track: {
 				value: characterInfo.insightXP,
@@ -470,10 +686,10 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 		{
 			name: "Prowess",
 			actions: [
-				{name: "Finesse", value: characterInfo.finesse},
-				{name: "Skirmish", value: characterInfo.skirmish},
-				{name: "Prowl", value: characterInfo.prowl},
-				{name: "Wreck", value: characterInfo.wreck}
+				{name: "Finesse", value: characterInfo.finesse, setValue: characterInfoSetters.setFinesse},
+				{name: "Skirmish", value: characterInfo.skirmish, setValue: characterInfoSetters.setSkirmish},
+				{name: "Prowl", value: characterInfo.prowl, setValue: characterInfoSetters.setProwl},
+				{name: "Wreck", value: characterInfo.wreck, setValue: characterInfoSetters.setWreck}
 			],
 			xp_track: {
 				value: characterInfo.prowessXP,
@@ -484,10 +700,10 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 		{
 			name: "Resolve",
 			actions: [
-				{name: "Attune", value: characterInfo.attune},
-				{name: "Command", value: characterInfo.command},
-				{name: "Consort", value: characterInfo.consort},
-				{name: "Sway", value: characterInfo.sway}
+				{name: "Attune", value: characterInfo.attune, setValue: characterInfoSetters.setAttune},
+				{name: "Command", value: characterInfo.command, setValue: characterInfoSetters.setCommand},
+				{name: "Consort", value: characterInfo.consort, setValue: characterInfoSetters.setConsort},
+				{name: "Sway", value: characterInfo.sway, setValue: characterInfoSetters.setSway}
 			],
 			xp_track: {
 				value: characterInfo.resolveXP,
@@ -497,27 +713,158 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 		}
 	]
 	
+	// const details = {
+		// name: characterInfo.name,
+		// alias: characterInfo.alias,
+		// look: {
+			// gender: characterInfo.gender,
+			// traits: characterInfo.traits,
+			// clothes: characterInfo.clothes
+		// },
+		// heritage: characterInfo.heritage,
+		// background: characterInfo.background,
+		// vice: characterInfo.vice,
+		// vicePurveyor: characterInfo.vicePurveyor,
+		// ally: characterInfo.ally,
+		// nemesis: characterInfo.nemesis,
+		// playbook: characterInfo.playbook,
+		// coin: {
+			// value: characterInfo.coin,
+			// setValue: characterInfoSetters.setCoin,
+			// maxValue: 4
+		// },
+		// stash: characterInfo.stash
+	// }
+	
 	const details = {
-		name: characterInfo.name,
-		alias: characterInfo.alias,
-		look: {
-			gender: characterInfo.gender,
-			traits: characterInfo.traits,
-			clothes: characterInfo.clothes
+		name: {
+			value: characterInfo.name,
+			setValue: characterInfoSetters.setName,
 		},
-		heritage: characterInfo.heritage,
-		background: characterInfo.background,
-		vice: characterInfo.vice,
-		vicePurveyor: characterInfo.vicePurveyor,
-		ally: characterInfo.ally,
-		nemesis: characterInfo.nemesis,
-		playbook: characterInfo.playbook,
+		alias: {
+			value: characterInfo.alias,
+			setValue: characterInfoSetters.setAlias,
+		},
+		gender: {
+			value: characterInfo.gender,
+			setValue: characterInfoSetters.setGender,
+			choices: ["Ambiguous", "Concealed", "Man", "Woman"]
+		},
+		traits: {
+			value: characterInfo.traits,
+			setValue: characterInfoSetters.setTraits,
+			choices: [
+				"Affable",
+				"Athletic",
+				"Bony",
+				"Bright",
+				"Brooding",
+				"Calm",
+				"Chiseled",
+				"Cold",
+				"Dark",
+				"Delicate",
+				"Fair",
+				"Fierce",
+				"Handsome",
+				"Huge",
+				"Languid",
+				"Lean",
+				"Lovely",
+				"Open",
+				"Plump",
+				"Rough",
+				"Sad",
+				"Scarred",
+				"Slim",
+				"Squat",
+				"Stern",
+				"Stout",
+				"Striking", 
+				"Weathered",
+				"Wiry",
+				"Worn",
+			]
+		},
+		clothes: {
+			value: characterInfo.clothes,
+			setValue: characterInfoSetters.setClothes,
+			choices: [
+				"Collared Shirt",
+				"Eel-skin Bodysuit",
+				"Fitted Dress",
+				"Fitted Leggings",
+				"Heavy Cloak",
+				"Hide and Furs",
+				"Hood and Veil",
+				"Hooded Coat",
+				"Knit Cap",
+				"Leathers",
+				"Long Coat",
+				"Long Scarf",
+				"Loose Silks",
+				"Mask and Robes",
+				"Scavenged Uniform",
+				"Sharp Trousers",
+				"Skirt and Blouse",
+				"Slim Jacket",
+				"Soft Boots",
+				"Short Cloak",
+				"Suit and Vest",
+				"Suspenders",
+				"Tall Boots",
+				"Thick Greatcoat",
+				"Threadbare Tatters",
+				"Tricorn Hat",
+				"Waxed Coat",
+				"Work Boots",
+			]
+		},
+		heritage: {
+			value: characterInfo.heritage,
+			setValue: characterInfoSetters.setHeritage,
+			choices: ["Akoros", "The Dagger Isles", "Iruvia", "Severos", "Skovlan", "Tycheros"]
+		},
+		background: {
+			value: characterInfo.background,
+			setValue: characterInfoSetters.setBackground,
+			choices: ["Academic", "Labor", "Law", "Trade", "Military", "Noble", "Underworld"]
+		},
+		vice: {
+			value: characterInfo.vice,
+			setValue: characterInfoSetters.setVice,
+			choices: ["Faith", "Gambling", "Luxury", "Obligation", "Pleasure", "Stupor", "Weird"]
+		},
+		vicePurveyor: {
+			value: characterInfo.vicePurveyor,
+			setValue: characterInfoSetters.setVicePurveyor,
+		},
+		ally: {
+			value: characterInfo.ally,
+			setValue: characterInfoSetters.setAlly,
+		},
+		nemesis: {
+			value: characterInfo.nemesis,
+			setValue: characterInfoSetters.setNemesis,
+		},
+		playbook: {
+			value: characterInfo.playbook,
+			setValue: characterInfoSetters.setPlaybook,
+			choices: ["Cutter", "Hound", "Leech", "Lurk", "Slide", "Spider", "Whisper"]
+		},
 		coin: {
 			value: characterInfo.coin,
 			setValue: characterInfoSetters.setCoin,
 			maxValue: 4
 		},
-		stash: characterInfo.stash
+		stash: {
+			value: characterInfo.stash,
+			setValue: characterInfoSetters.setStash,
+		},
+		trauma: {
+			value: characterInfo.trauma,
+			setValue: characterInfoSetters.setTrauma,
+		}
 	}
 	
 	const stressInfo = {
@@ -554,47 +901,70 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 	const attributeBlocks = [];
 	attributes.forEach((attribute) => {
 		attributeBlocks.push(
-			<>
-				<AttributeBlock attribute={attribute} />
-				<br/>
-			</>
+			<div>
+				<AttributeBlock attribute={attribute} edit={editActions} />
+			</div>
 		);
 	});
 	
 	const playbookItems = PLAYBOOK_ITEMS[characterInfo.playbook.toLowerCase()];
 	
 	return (
-		<div>
+		<div class="toplevelWrapper">
 			<CharacterDetails characterDetails={details} />
 			<br/>
-			<LabelTracker label="Playbook XP" track={playbookXPInfo} />
+			
+			<fieldset>
+				<legend class="sectionHeader">Status:</legend>
+				<div class="statusWrapper">
+					<div>
+						<LabelTracker label="Stress" track={stressInfo} />
+					</div>
+					<div>
+					<TraumaTracker traumaList={characterInfo.trauma} />
+					</div>
+					<div>
+					<HealingClock healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} />
+					</div>
+					<div>
+					<HealingButton healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} harm={harm} />
+					</div>
+				</div>
+				<hr/>
+				<HarmTable harm={harm} />
+				<hr/>
+				<ArmorUses armorUses={armor} />
+				<LoadDisplay load={characterInfo.load} setLoad={characterInfoSetters.setLoad} playbook={characterInfo.playbook} inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} />
+			</fieldset>
 			<br/>
-			<LabelTracker label="Stress" track={stressInfo} />
-			<TraumaTracker traumaList={characterInfo.trauma} />
+			
+			<fieldset>
+				<legend class="sectionHeader">Attributes and Actions:</legend>
+				<div class="attributeBlockWrapper">
+					{attributeBlocks}
+					<div>
+						<LabelTracker label="Playbook" track={playbookXPInfo} />
+						<button onClick={() => setEditActions(!editActions)} type="button" className="btn btn-primary">
+							{editActions ? "Lock Actions" : "Edit Actions"}
+						</button>
+					</div>
+				</div>
+			</fieldset>
 			<br/>
-			<HarmTable harm={harm} />
-			<br/>
-			<HealingClock healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} />
-			<HealingButton healing={characterInfo.healing} setHealing={characterInfoSetters.setHealing} harm={harm} />
-			<br/>
-			<br/>
-			<ArmorUses armorUses={armor} />
-			<br/>
-			{attributeBlocks}
-			<br/>
-			<LoadDisplay load={characterInfo.load} setLoad={characterInfoSetters.setLoad} playbook={characterInfo.playbook} inventory={characterInfo.itemsUsed} />
-			<br/> 
-			<br/>
-			<ItemList label="Items" inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} itemSource={GENERAL_ITEMS} />
-			<br/>
-			<ItemList label="Playbook Items" inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} itemSource={playbookItems} />
-			<br/>
-			Special Abilities:
-			<br/>
-			<AbilityList abilityList={characterInfo.specialAbilities} />
-			<br/>
-			<br/>
-			<XPTriggerList playbook={characterInfo.playbook} />
+			
+			<fieldset>
+				<legend class="sectionHeader">Other:</legend>
+				<div>
+					<ItemList label="Items" inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} itemSource={GENERAL_ITEMS} />
+					<br/>
+					<ItemList label="Playbook Items" inventory={characterInfo.itemsUsed} setInventory={characterInfoSetters.setItemsUsed} itemSource={playbookItems} />
+					<br/>
+					<AbilityList abilityList={characterInfo.specialAbilities} setAbilityList={characterInfoSetters.setSpecialAbilities} playbook={characterInfo.playbook} />
+					<br/>
+					<XPTriggerList playbook={characterInfo.playbook} />
+				</div>
+			</fieldset>
+			
 		</div>
 	);
 }
@@ -746,7 +1116,7 @@ function App() {
 		setAlias(loadOneCookie("alias", ""));
 		setGender(loadOneCookie("gender", ""));
 		setTraits(loadOneCookie("traits", ""));
-		setClothes(loadOneCookie("clotes", ""));
+		setClothes(loadOneCookie("clothes", ""));
 		setHeritage(loadOneCookie("heritage", ""));
 		setBackground(loadOneCookie("background", ""));
 		setVice(loadOneCookie("vice", ""));
@@ -1249,59 +1619,289 @@ const PLAYBOOK_ITEMS = {
 }
 
 const SPECIAL_ABILITIES = {
-	slideRook: {
+	"Battleborn": {
+		name: "Battleborn",
+		description: "You may extend your special armor to reduce harm from an attack in combat or to push yourself during a fight.",
+		playbook: "cutter"
+	},
+	"Bodyguard": {
+		name: "Bodyguard",
+		description: "When you protect a teammate, take +1d to your resistance roll. When you gather info to anticipate possible threats in the current situation, you get +1 effect.",
+		playbook: "cutter"
+	},
+	"Ghost Fighter": {
+		name: "Ghost Fighter",
+		description: "You may imbue your hands, melee weapons, or tools with spirit energy. You gain potency in combat vs. the supernatural. You may grapple with spirits to restrain and capture them.",
+		playbook: "cutter"
+	},
+	"Leader": {
+		name: "Leader",
+		description: "When you Command a cohort in combat, they continue to fight when they would otherwise break (they're not taken out when they suffer level 3 harm). They gain +1 effect and 1 armor.",
+		playbook: "cutter"
+	},
+	"Mule": {
+		name: "Mule",
+		description: "Your load limits are higher. Light 5. Normal 7. Heavy 8.",
+		playbook: "cutter"
+	},
+	"Not to be Trifled With": {
+		name: "Not to be Trifled With",
+		description: "You can push yourself to do one of the following: perform a feat of physical force that verges on the superhuman - engage a small gang on equal footing in close combat.",
+		playbook: "cutter"
+	},
+	"Savage": {
+		name: "Savage",
+		description: "When you unleash physical violence, it's especially frightening. When you Command a frightened target, take +1d.",
+		playbook: "cutter"
+	},
+	"Vigorous": {
+		name: "Vigorous",
+		description: "You recover from harm faster. Permanently fill in one of your healing clock segments. Take +1d to healing treatment rolls.",
+		playbook: "cutter"
+	},
+	"Sharpshooter": {
+		name: "Sharpshooter",
+		description: "You can push yourself to do one of the following: make a ranged attack at extreme distance beyond what's normal for the weapon - unleash a barrage of rapid fire to suppress the enemy.",
+		playbook: "hound"
+	},
+	"Focused": {
+		name: "Focused",
+		description: "You may expend your special armor to resist a consequence of surprise or mental harm (fear, confusion, losing track of someone) or to push yourself for ranged combat or tracking.",
+		playbook: "hound"
+	},
+	"Ghost Hunter": {
+		name: "Ghost Hunter",
+		description: "Your hunting pet is imbued with spirit energy. It gains potency when tracking or fighting the supernatural, and gains an arcane ability: ghost-form, mind-link, or arrow-swift. Take this ability again to choose an additional arcane ability for your pet.",
+		playbook: "hound"
+	},
+	"Scout": {
+		name: "Scout",
+		description: "When you gather info to locate a target, you get +1 effect. When you hide in a prepared position or use camouflage, you get +1d to rolls to avoid detection.",
+		playbook: "hound"
+	},
+	"Survivor": {
+		name: "Survivor",
+		description: "From hard won experience or occult ritual, you are immune to the poisonous miasma of the deathlands and are able to subsist on the strange flora and fauna there. you get +1 stress box.",
+		playbook: "hound"
+	},
+	"Tough as Nails": {
+		name: "Tough as Nails",
+		description: "Penalties from harm are one level less severe (though level 4 harm is still fatal).",
+		playbook: "hound"
+	},
+	"Vengeful": {
+		name: "Vengeful",
+		description: "You gain an additional xp trigger: You got payback against someone who harmed you or someone you care about. If your crew helped you get payback, also mark crew xp.",
+		playbook: "hound"
+	},
+	"Alchemist": {
+		name: "Alchemist",
+		description: "When you invent or craft a creation with alchemical features, take +1 result level to your roll. You begin with one special formula already known.",
+		playbook: "leech"
+	},
+	"Analyst": {
+		name: "Analyst",
+		description: "During downtime, you get two ticks to distribute among any long term project clocks that involve investigation or learning a new formula or design plan.",
+		playbook: "leech"
+	},
+	"Artificer": {
+		name: "Artificer",
+		description: "When you invent or craft a creation with spark-craft features, take +1 result level to your roll. You begin with one special design already known.",
+		playbook: "leech"
+	},
+	"Fortitude": {
+		name: "Fortitude",
+		description: "You may expend your special armor to resist a consequence of fatigue, weakness, or chemical effects, or to push yourself when working with technical skill or handling alchemicals.",
+		playbook: "leech"
+	},
+	"Ghost Ward": {
+		name: "Ghost Ward",
+		description: "You know how to Wreck an area with arcane substances and methods so that it is either anathema or enticing to spirits (your choice).",
+		playbook: "leech"
+	},
+	"Physicker": {
+		name: "Physicker",
+		description: "You can Tinker with bones, blood, and bodily humours to treat wounds or stabilize the dying. You may study a malady or corpse. Everyone in your crew gets +1d to their healing treatment rolls.",
+		playbook: "leech"
+	},
+	"Saboteur": {
+		name: "Saboteur",
+		description: "When you Wreck, the work is much quieter than it should be and the damage is hidden from casual inspection.",
+		playbook: "leech"
+	},
+	"Venomous": {
+		name: "Venomous",
+		description: "Choose a drug or poison (from your bandolier stock) to which you have become immune. You can push yourself to secrete it through your skin or saliva or exhale it as a vapor.",
+		playbook: "leech"
+	},
+	"Infiltrator": {
+		name: "Infiltrator",
+		description: "You are not affected by quality or Tier when you bypass security measures.",
+		playbook: "lurk"
+	},
+	"Ambush": {
+		name: "Ambush",
+		description: "When you attack from hiding or spring a trap, you get +1d.",
+		playbook: "lurk"
+	},
+	"Daredevil": {
+		name: "Daredevil",
+		description: "When you roll a desperate action, you get +1d to your roll if you also take -1d to any resistance rolls against consequences from your action.",
+		playbook: "lurk"
+	},
+	"The Devil's Footsteps": {
+		name: "The Devil's Footsteps",
+		description: "When you push yourself, choose one of the following benefits: perform a feat of athletics that verges on the superhuman - manuever to confuse your enemies so they mistakenly attack each other.",
+		playbook: "lurk"
+	},
+	"Expertise": {
+		name: "Expertise",
+		description: "Choose one of your action ratings. When you lead a group action using that action, you can suffer only 1 stress at most regardless of the number of failed rolls.",
+		playbook: "lurk"
+	},
+	"Ghost Veil": {
+		name: "Ghost Veil",
+		description: "You may shift partially into the ghost field, becoming shadowy and insubstantial for a few moments. Take 2 stress when you shift, plus 1 stress for each extra feature: It lasts for a few minutes rather than moments - you are invisible rather than shadowy - you may float through the air like a ghost.",
+		playbook: "lurk"
+	},
+	"Reflexes": {
+		name: "Reflexes",
+		description: "When there's a question about who acts first, the answer is you (two characters with Reflexes act simultaneously).",
+		playbook: "lurk"
+	},
+	"Shadow": {
+		name: "Shadow",
+		description: "You may expend your special armor to resist a consequence from detection or security measures, or to push yourself for a feat of athletics or stealth.",
+		playbook: "lurk"
+	},
+	"Rook's Gambit": {
 		id: "slideRook",
 		name: "Rook's Gambit",
 		description: "Take 2 stress to roll your best action rating while performing a different action. Say how you adapt your skill to this use.",
 		playbook: "slide"
 	},
-	slideCloak: {
+	"Cloak and Dagger": {
 		id: "slideCloak",
 		name: "Cloak and Dagger",
 		description: "When you use a disguise or other form of covert misdirection, you get +1d to rolls to confuse or deflect suspicion. When you throw off your disguise, the resulting surprise gives you the initiative in the situation.",
 		playbook: "slide"
 	},
-	slideGhost: {
+	"Ghost Voice": {
 		id: "slideGhost",
 		name: "Ghost Voice",
 		description: "You know the secret method to interact with a ghost or demon as if it were a normal human, regardless of how wild or feral it appears. You gain potency when communicating with the supernatural.",
 		playbook: "slide"
 	},
-	slideMirror: {
+	"Like Looking in the Mirror": {
 		id: "slideMirror",
 		name: "Like Looking in the Mirror",
 		description: "You can always tell when someone is lying to you.",
 		playbook: "slide"
 	},
-	slideSide: {
+	"A Little Something on the Side": {
 		id: "slideSide",
 		name: "A Little Something on the Side",
 		description: "At the end of each downtime phase, you earn +2 stash.",
 		playbook: "slide"
 	},
-	slideMesmerism: {
+	"Mesmerism": {
 		id: "slideMesmerism",
 		name: "Mesmerism",
 		description: "When you Sway someone, you may cause them to forget that it's happened until they next interact with you.",
 		playbook: "slide"
 	},
-	slideSubterfuge: {
+	"Subterfuge": {
 		id: "slideSubterfuge",
 		name: "Subterfuge",
 		description: "You may expend your special armor to resist a consequence from suspicion or persuasion, or to push yourself for subterfuge.",
 		playbook: "slide"
 	},
-	slideTrust: {
+	"slideTrust": {
 		id: "slideTrust",
 		name: "Trust in Me",
 		description: "You get +1d vs. a target with whom you have an intimate relationship.",
 		playbook: "slide"
 	},
-	x: {
-		id: "",
-		name: "",
-		description: "",
-		playbook: ""
+	"Foresight": {
+		
+		name: "Foresight",
+		description: "Two times per score you can assist a teammate without paying stress. Tell us how you prepared for this.",
+		playbook: "spider"
+	},
+	"Calculating": {
+		name: "Calculating",
+		description: "Due to your careful planning, during downtime, you may give yourself or another crew member +1 downtime action.",
+		playbook: "spider"
+	},
+	"Connected": {
+		name: "Connected",
+		description: "During downtime, you get +1 result level when you acquire an asset or reduce heat.",
+		playbook: "spider"
+	},
+	"Functioning Vice": {
+		name: "Functioning Vice",
+		description: "When you indulge your vice, you may adjust the dice outcome by 1 or 2 (up or down). An ally who joins in your vice may do the same.",
+		playbook: "spider"
+	},
+	"Ghost Contract": {
+		name: "Ghost Contract",
+		description: "When you shake on a deal, you and your partner - human or otherwise - both bear a mark of your oath. If either breaks the contrack, they take level 3 harm, 'Cursed'.",
+		playbook: "spider"
+	},
+	"Jail Bird": {
+		name: "Jail Bird",
+		description: "When incarcerated, your wanted level counts as 1 less, your Tier as 1 more, and you gain +1 faction status with a faction you help on the inside (in addition to your incarceration roll).",
+		playbook: "spider"
+	},
+	"Mastermind": {
+		name: "Mastermind",
+		description: "You may expend your special armor to protect a teammate, or to push yourself when you gather information or work on a long-term project.",
+		playbook: "spider"
+	},
+	"Weaving the Web": {
+		name: "Weaving the Web",
+		description: "You gain +1d to Consort when you gather information on a target for a score. You get +1d to the engagement roll for that operation.",
+		playbook: "spider"
+	},
+	"Compel": {
+		name: "Compel",
+		description: "You can Attune to the ghost field to force a nearby ghost to appear and obey a command you give it. You are not supernaturally terrified by a ghost you summon or compel (though your allies may be).",
+		playbook: "whisper"
+	},
+	"Ghost Mind": {
+		name: "Ghost Mind",
+		description: "You're always aware of supernatural entities in your presence. Take +1d then you gather info about the supernatural.",
+		playbook: "whisper"
+	},
+	"Iron Will": {
+		name: "Iron Will",
+		description: "You're immune to the terror that some supernatural entities inflict on sight. Take +1d to resistance rolls with Resolve.",
+		playbook: "whisper"
+	},
+	"Occultist": {
+		name: "Occultist",
+		description: "You know the secret ways to Consort with ancient powers, forgotten gods, or demons. Once you've consorted with one, you get +1 to command cultists who worship it.",
+		playbook: "whisper"
+	},
+	"Ritual": {
+		name: "Ritual",
+		description: "You can Study an occult ritual (or create a new one) to summon a supernatural effect or being. You know the arcane methods to perform ritual sorcery. You begin with one ritual already learned.",
+		playbook: "whisper"
+	},
+	"Strange Methods": {
+		name: "Strange Methods",
+		description: "When you invent or craft a creation with arcane features, take +1 result level to your roll. You begin with one arcane design already known.",
+		playbook: "whisper"
+	},
+	"Tempest": {
+		name: "Tempest",
+		description: "You can push yourself to do one of the following: unleash a stroke of lightning as a weapon - summon a storm in your immediate vicinity (torrential rain, roaring winds, heavy fog, chilling frost/snow, etc.).",
+		playbook: "whisper"
+	},
+	"Warded": {
+		name: "Warded",
+		description: "You may expend your special armor to resist a supernatural consequence, or to push yourself when you deal with arcane forces.",
+		playbook: "whisper"
 	},
 }
 
@@ -1314,5 +1914,7 @@ const XP_TRIGGERS = {
 	spider: "calculation or conspiracy",
 	whisper: "knowledge or arcane power"
 }
+
+const TRAUMA_OPTIONS = ["Cold", "Haunted", "Obsessed", "Paranoid", "Reckless", "Soft", "Unstable", "Vicious"]
 
 export default App;
