@@ -319,7 +319,6 @@ function TraumaTracker({ traumaList }) {
 	return (
 		<>
 			<LabelTracker label="Trauma" track={traumaInfo} />
-				{traumaList}
 		</>
 	);
 }
@@ -986,6 +985,93 @@ function CharacterSheet({ characterInfo, characterInfoSetters }) {
 	);
 }
 
+function SheetSaver({ getters }) {
+	
+	let exportName = "bitdonline_"+getters.alias+".json"
+	
+	return (
+			<div>
+				<label class="wrapperHeader"  for="download">Download Character:</label>
+				<br/>
+				<a id="download" href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(getters))}`} download={exportName}>
+					{`Download Character File`}
+				</a>
+			</div>
+	);
+}
+
+function SheetLoader({ setters }) {
+	function handleFileSelect(e) {
+		let files = e.target.files;
+		let file = files[0];
+		let reader = new FileReader();
+		let loadCharacter = (e) => {
+			const loadedCharacter = JSON.parse(e.target.result);
+			
+			setters.setName(loadedCharacter.name);
+			setters.setAlias(loadedCharacter.alias);
+			setters.setGender(loadedCharacter.gender);
+			setters.setTraits(loadedCharacter.traits);
+			setters.setClothes(loadedCharacter.clothes);
+			setters.setHeritage(loadedCharacter.heritage);
+			setters.setBackground(loadedCharacter.background);
+			setters.setVice(loadedCharacter.vice);
+			setters.setVicePurveyor(loadedCharacter.vicePurveyor);
+			setters.setAlly(loadedCharacter.ally);
+			setters.setNemesis(loadedCharacter.nemesis);
+			setters.setPlaybook(loadedCharacter.playbook);
+			setters.setCoin(loadedCharacter.coin);
+			setters.setStash(loadedCharacter.stash);
+			setters.setStress(loadedCharacter.stress);
+			setters.setTrauma(loadedCharacter.trauma);
+			setters.setHarm1a(loadedCharacter.harm1a);
+			setters.setHarm1b(loadedCharacter.harm1b);
+			setters.setHarm2a(loadedCharacter.harm2a);
+			setters.setHarm2b(loadedCharacter.harm2b);
+			setters.setHarm3a(loadedCharacter.harm3a);
+			setters.setHealing(loadedCharacter.healing);
+			setters.setArmorNormal(loadedCharacter.armorNormal);
+			setters.setArmorHeavy(loadedCharacter.armorHeavy);
+			setters.setArmorSpecial(loadedCharacter.armorSpecial);
+			setters.setInsightXP(loadedCharacter.insightXP);
+			setters.setProwessXP(loadedCharacter.prowessXP);
+			setters.setResolveXP(loadedCharacter.resolveXP);
+			setters.setPlaybookXP(loadedCharacter.playbookXP);
+			setters.setHunt(loadedCharacter.hunt);
+			setters.setStudy(loadedCharacter.study);
+			setters.setSurvey(loadedCharacter.survey);
+			setters.setTinker(loadedCharacter.tinker);
+			setters.setFinesse(loadedCharacter.finesse);
+			setters.setProwl(loadedCharacter.prowl);
+			setters.setSkirmish(loadedCharacter.skirmish);
+			setters.setWreck(loadedCharacter.wreck);
+			setters.setAttune(loadedCharacter.attune);
+			setters.setCommand(loadedCharacter.command);
+			setters.setConsort(loadedCharacter.consort);
+			setters.setSway(loadedCharacter.sway);
+			setters.setLoad(loadedCharacter.load);
+			setters.setItemsUsed(loadedCharacter.itemsUsed);
+			setters.setSpecialAbilities(loadedCharacter.specialAbilities);
+		};
+		let onReaderLoad = (f) => {
+			return loadCharacter;
+		};
+		
+		reader.onload = onReaderLoad(file);
+		reader.readAsText(file);
+	}
+	
+	return (
+		<div>
+			<form enctype="multipart/form-data">
+				<label class="wrapperHeader"  for="upload">Upload Character:</label>
+				<br/>
+				<input id="upload" type="file" accept=".json" name="files" size="2000" onChange={handleFileSelect} />
+			</form>
+		</div>
+	);
+}
+
 function App() {
 	const [name, setName] = useState("");
 	const [alias, setAlias] = useState("");
@@ -1233,24 +1319,15 @@ function App() {
 	
 	useEffect(() => {loadCookie()}, []);
 	
-	let exportName = "bitdonline_"+name+".json"
-	
 	const [importName, setImportName] = useState()
 	
 	return (
 	  <>
 			<CharacterSheet characterInfo={characterInfo} characterInfoSetters={characterInfoSetters} />
 			<br/>
-			<button onClick={saveCookie}>Save Character</button>
+			<SheetSaver getters={characterInfo} />
 			<br/>
-			<a
-				href={`data:text/json;charset=utf-8,${encodeURIComponent(
-					JSON.stringify(characterInfo)
-				)}`}
-				download={exportName}
-			>
-				{`Export Character`}
-			</a>
+			<SheetLoader setters={characterInfoSetters} />
 		</>
 	);
 }
@@ -1797,55 +1874,46 @@ const SPECIAL_ABILITIES = {
 		playbook: "lurk"
 	},
 	"Rook's Gambit": {
-		id: "slideRook",
 		name: "Rook's Gambit",
 		description: "Take 2 stress to roll your best action rating while performing a different action. Say how you adapt your skill to this use.",
 		playbook: "slide"
 	},
 	"Cloak and Dagger": {
-		id: "slideCloak",
 		name: "Cloak and Dagger",
 		description: "When you use a disguise or other form of covert misdirection, you get +1d to rolls to confuse or deflect suspicion. When you throw off your disguise, the resulting surprise gives you the initiative in the situation.",
 		playbook: "slide"
 	},
 	"Ghost Voice": {
-		id: "slideGhost",
 		name: "Ghost Voice",
 		description: "You know the secret method to interact with a ghost or demon as if it were a normal human, regardless of how wild or feral it appears. You gain potency when communicating with the supernatural.",
 		playbook: "slide"
 	},
 	"Like Looking in the Mirror": {
-		id: "slideMirror",
 		name: "Like Looking in the Mirror",
 		description: "You can always tell when someone is lying to you.",
 		playbook: "slide"
 	},
 	"A Little Something on the Side": {
-		id: "slideSide",
 		name: "A Little Something on the Side",
 		description: "At the end of each downtime phase, you earn +2 stash.",
 		playbook: "slide"
 	},
 	"Mesmerism": {
-		id: "slideMesmerism",
 		name: "Mesmerism",
 		description: "When you Sway someone, you may cause them to forget that it's happened until they next interact with you.",
 		playbook: "slide"
 	},
 	"Subterfuge": {
-		id: "slideSubterfuge",
 		name: "Subterfuge",
 		description: "You may expend your special armor to resist a consequence from suspicion or persuasion, or to push yourself for subterfuge.",
 		playbook: "slide"
 	},
-	"slideTrust": {
-		id: "slideTrust",
+	"Trust in Me": {
 		name: "Trust in Me",
 		description: "You get +1d vs. a target with whom you have an intimate relationship.",
 		playbook: "slide"
 	},
 	"Foresight": {
-		
 		name: "Foresight",
 		description: "Two times per score you can assist a teammate without paying stress. Tell us how you prepared for this.",
 		playbook: "spider"
